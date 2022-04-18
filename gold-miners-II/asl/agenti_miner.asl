@@ -29,11 +29,12 @@ search_gold_strategy(near_unvisited). // initial strategy
      !inform_gsize_to_leader(S);
      !choose_goal.
 
-+pos(_,_,X)
-  <- .send(agenti_leader,tell,tick(X)).
++pos(_,_,_)
+  <- .send(agenti_leader,tell,designate_agents).
 
-+!inform_gsize_to_leader(S) : .my_name(miner1)
-   <- ?depot(S,DX,DY);
++!inform_gsize_to_leader(S) : .my_name(agenti_miner1)
+   <- .print("INFORM LEADER CALLED");
+   	  ?depot(S,DX,DY);
       .send(agenti_leader,tell,depot(S,DX,DY));
       ?gsize(S,W,H);
       .send(agenti_leader,tell,gsize(S,W,H)).
@@ -168,17 +169,13 @@ worthwhile(gold(GX,GY)) :-
    before the current goal intention.
 */
 
-
-
 // I perceived unknown gold, decide next gold
 @pcell0[atomic]          // atomic: so as not to handle another
                          // event until handle gold is carrying on
 +cell(X,Y,gold) : role(scout) & not gold(X,Y)
   <- +gold(X,Y);
      +announced(gold(X,Y));
-     .print("Announcing ",gold(X,Y)," to others");
-     .broadcast(tell,gold(X,Y));
-	 .send(agenti_leader,tell,gold(X,Y)).
+     !announce_gold(X, Y).
 
 +cell(X,Y,gold)
   :  role(miner) & 
@@ -186,28 +183,45 @@ worthwhile(gold(GX,GY)) :-
      not gold(X,Y) // is is an unknown gold
   <- .print("Gold perceived: ",gold(X,Y));
      +gold(X,Y);
+	 !announce_gold(X,Y);
      !choose_goal. 
 	 
 // I am not free and do not have space, just add gold belief and announce to others
 +cell(X,Y,gold)
-  :  role(miner) & 
-     not container_has_space & not gold(X,Y) & not committed(gold(X,Y),_,_)
+  :  role(miner) & not container_has_space & not gold(X,Y)
   <- +gold(X,Y);
      +announced(gold(X,Y));
-     .print("Announcing ",gold(X,Y)," to others");
-     .broadcast(tell,gold(X,Y));
-	 .send(agenti_leader,tell,gold(X,Y)).
+	 !announce_gold(X, Y).
 
 // If I see an empty cell where it was supposed to be gold, announce it to others
 +cell(X,Y,empty)
   :  role(miner) & gold(X,Y) &
      not .desire(fetch_gold(gold(X,Y))) // in this case, I empty the cell!
   <- !remove(gold(X,Y));
-     .print("The gold at ",X,",",Y," was picked by someone else! Announcing to others.");
-     .broadcast(tell,picked(gold(X,Y)));
-	 .send(agenti_leader,untell,gold(X,Y)).
+     .print("The gold at ",X,",",Y," was picked by someone else! Announcing to others.").
+	 
++cell(X,Y,gold) : not gold(X,Y)
+  <- +gold(X,Y);
+  	 +announced(gold(X,Y));
+	 !announce_gold(X,Y).
 
++cell(X,Y,empty) : gold(X,Y)
+  <- !remove(gold(X,Y));
+  	 .print("Was expecting gold at ",X,", ",Y," but there's nothing there.").
 
++!announce_gold(X, Y)
+  <- .print("Announcing ",gold(X,Y)," to others");
+  	 !custom_broadcast(tell,gold(X,Y));
+  	 .send(agenti_leader,tell,gold(X,Y)).
+
++!custom_broadcast(Action, What)
+  <- .send(agenti_miner1,Action,What);
+     .send(agenti_miner2,Action,What);
+	 .send(agenti_miner3,Action,What);
+	 .send(agenti_miner4,Action,What);
+	 .send(agenti_miner5,Action,What);
+	 .send(agenti_miner6,Action,What).
+	 
 /* end of a simulation */
 
 +end_of_simulation(S,R)
@@ -229,7 +243,8 @@ worthwhile(gold(GX,GY)) :-
      .abolish(picked(gold(X,Y)));
      .abolish(announced(gold(X,Y)));
      .abolish(allocated(gold(X,Y),_));
-	 .send(agenti_leader,untell,gold(X,Y)).
+	 .send(agenti_leader,untell,gold(X,Y));
+     !custom_broadcast(untell,gold(X,Y)).
 
 @rl[atomic]
 +restart
