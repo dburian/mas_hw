@@ -61,16 +61,18 @@ search_gold_strategy(near_unvisited). // initial strategy
     container_has_space &               // I have space for more gold
     .findall(gold(X,Y),gold(X,Y),LG) &  // LG is all known golds
     evaluate_golds(LG,LD) &             // evaluate golds in LD
+    .print("All golds=",LG,", evaluation=",LD) &
     .length(LD) > 0 &                   // is there a gold to fetch?
-    .min(LD,d(D,NewG,_))                // get the near
+    .min(LD,d(D,NewG,_)) &              // get the near
+    worthwhile(NewG)
  <- .print("Gold options are ",LD,". Next gold is ",NewG);
     !change_to_fetch(NewG).
 
 +!choose_goal // there is no worth gold
- : carrying_gold(NG) & NG > 0
+ :  carrying_gold(NG) & NG > 0
  <- !change_to_goto_depot.
 
-+!choose_goal // not carrying gold, be free and search gold 
++!choose_goal // not carrying gold, be free and search gold
  <- !change_to_search.
 
 
@@ -98,8 +100,7 @@ search_gold_strategy(near_unvisited). // initial strategy
      !change_to_fetch(G).
 +!change_to_fetch(G)               // change the gold to fetch
   :  .desire(fetch_gold(OtherG))
-  <- .print("Changing to fetch other gold");
-  	 .drop_desire(fetch_gold(OtherG));
+  <- .drop_desire(fetch_gold(OtherG));
      !change_to_fetch(G).
 +!change_to_fetch(G)                // none of above conditions
   <- -free;
@@ -141,6 +142,22 @@ check_commit(gold(X,Y),MyD,committed_by(Ag,at(OtX,OtY),far(OtD)))
      jia.ag_pos(Ag,OtX,OtY) &                // get its location
      jia.path_length(OtX,OtY,X,Y,OtD) &      // calc its distance from the gold
      MyD < OtD.                              // ok to consider the gold if I am near
+
+
+worthwhile(gold(_,_)) :-
+     carrying_gold(0).
+worthwhile(gold(GX,GY)) :-
+     carrying_gold(NG) & NG > 0 &
+     pos(AgX,AgY,Step) &
+     depot(_,DX,DY) &
+     steps(_,TotalSteps) &
+     AvailableSteps = TotalSteps - Step &
+
+     // cost of fetching gold and after go to depot
+     jia.add_fatigue(jia.path_length(AgX,AgY,GX,GY),NG,  CN4) & // ag to gold
+     jia.add_fatigue(jia.path_length(GX,  GY,DX,DY),NG+1,CN5) & // go to depot
+
+     AvailableSteps > (CN4 + CN5) * 1.1.
 
 
 /*
