@@ -8,7 +8,7 @@
      //.print("My bid for ",gold(X,Y)," is ",Bid);
      .send(agenti_leader,tell,bid(gold(X,Y),Bid,Me)).
 
-/*
+
 // bid in case I am going to depot:
 // the distance (and fatigue) of going to the gold and after to depot
 // -- this strategy leaves good gold options unhandled
@@ -19,7 +19,7 @@
   <- jia.path_length(AgX,AgY,X,Y,D1); jia.add_fatigue(D1,N,U1);
      jia.path_length(X,Y,DX,DY,D2);   jia.add_fatigue(D1,N+1,U2);
      Bid = U1 + U2.
-*/
+
 
 // bid in case I have space and known golds: the distance if the new gold are good
 +!calc_bid(gold(GX,GY), Bid)
