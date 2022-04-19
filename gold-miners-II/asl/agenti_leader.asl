@@ -101,13 +101,21 @@
      .min(LD,op(DistCloser,Closer));
      DistCloser < 10000;
      .print("Gold ",Gold," was allocated to ",Closer, " options ware ",LD);
-     .broadcast(tell,allocated(Gold,Closer)).
+     !custom_broadcast(tell,allocated(Gold,Closer)).
      //-Gold[source(_)].
 -!allocate_miner(Gold)
   <- .print("could not allocate gold ",Gold).
 
 // if some announce gold, cancel previous allocation
 +gold(X,Y)[source(Ag)]
-  <- .broadcast(untell, allocated(gold(X,Y),Ag)).
+  <- !custom_broadcast(untell, allocated(gold(X,Y),Ag)).
      .abolish(gold(_,_)).
+	 
++!custom_broadcast(Action, What)
+  <- .send(agenti_miner1,Action,What);
+     .send(agenti_miner2,Action,What);
+	 .send(agenti_miner3,Action,What);
+	 .send(agenti_miner4,Action,What);
+	 .send(agenti_miner5,Action,What);
+	 .send(agenti_miner6,Action,What).
 

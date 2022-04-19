@@ -18,7 +18,7 @@
 +!announce_not_handled_golds([G|R])
    :  not committed_to(G,_) & not announced(G)
    <- .print("Announcing ",G, ", since I am going to depot and that gold was not handled by me (although I perceived it).");
-      .broadcast(tell,G);
+      !custom_broadcast(tell,G);
       +announced(G);
       !announce_not_handled_golds(R).
 +!announce_not_handled_golds([_|R])
@@ -36,3 +36,10 @@
 
 +!leave_depot <- .send(agenti_leader,tell,finished).
 
++!custom_broadcast(Action, What)
+  <- .send(agenti_miner1,Action,What);
+     .send(agenti_miner2,Action,What);
+	 .send(agenti_miner3,Action,What);
+	 .send(agenti_miner4,Action,What);
+	 .send(agenti_miner5,Action,What);
+	 .send(agenti_miner6,Action,What).

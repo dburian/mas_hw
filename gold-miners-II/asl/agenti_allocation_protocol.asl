@@ -62,7 +62,7 @@ calc_gold_distance([gold(GX,GY)|R],[d(D,gold(GX,GY))|RD])
      not container_has_space           // I no longer have space
   <- .print("I can not handle ",Gold," anymore! (Re)announcing to others");
      .abolish(allocated(Gold,Me));
-     .broadcast(tell,Gold).
+     !custom_broadcast(tell,Gold).
 
 // some gold was allocated to me, but I have too much
 // allocations. Choose the worst to discard.
@@ -79,8 +79,8 @@ calc_gold_distance([gold(GX,GY)|R],[d(D,gold(GX,GY))|RD])
      .print("I have too many allocations (",LDS,"), discarting ",GDiscarted1," and ",GDiscarted2,".");
      .abolish(allocated(GDiscarted1,Me));
      .abolish(allocated(GDiscarted2,Me));
-     .broadcast(tell,GDiscarted1);
-     .broadcast(tell,GDiscarted2);
+     !custom_broadcast(tell,GDiscarted1);
+     !custom_broadcast(tell,GDiscarted2);
      !choose_goal.
 
 // some gold was allocated to me by the leader.
@@ -90,3 +90,10 @@ calc_gold_distance([gold(GX,GY)|R],[d(D,gold(GX,GY))|RD])
   <- .print("Gold ",Gold," allocated to me. (Re)deciding what to do.");
      !choose_goal.
 
++!custom_broadcast(Action, What)
+  <- .send(agenti_miner1,Action,What);
+     .send(agenti_miner2,Action,What);
+	 .send(agenti_miner3,Action,What);
+	 .send(agenti_miner4,Action,What);
+	 .send(agenti_miner5,Action,What);
+	 .send(agenti_miner6,Action,What).
