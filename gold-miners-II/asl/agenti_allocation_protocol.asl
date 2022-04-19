@@ -70,8 +70,7 @@ calc_gold_distance([gold(GX,GY)|R],[d(D,gold(GX,GY))|RD])
 +allocated(Gold,Me) // even by myself
   :  .my_name(Me) &                                    // the gold was allocated to me
      .findall(G,allocated(G,Me),LAlloc) &
-     .length(LAlloc,S) & my_capacity(Cap) & carrying_gold(CarryGoldCount) &
-	 S + CarryGoldCount > Cap  // more allocations than I support
+     .length(LAlloc,S) & my_capacity(Cap) & S > Cap+1  // more allocations than I support
   <- ?calc_gold_distance(LAlloc,LD);
      .sort(LD,LDS);
      .length(LD,LDL);
@@ -86,7 +85,7 @@ calc_gold_distance([gold(GX,GY)|R],[d(D,gold(GX,GY))|RD])
 
 // some gold was allocated to me by the leader.
 @palloc4[atomic]
-+allocated(Gold,Me)[source(agenti_leader)]
++allocated(Gold,Me)[source(borci_nula)]
   :  .my_name(Me)
   <- .print("Gold ",Gold," allocated to me. (Re)deciding what to do.");
      !choose_goal.
